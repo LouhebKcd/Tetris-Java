@@ -1,0 +1,50 @@
+<project name="livraison" default="run" basedir=".">
+    <property name="app.name" value="livraison"/>
+    <property name="app.version" value="0.1"/>
+    <property name="app.fullname" value="${app.name}-${app.version}"/>
+    <property name="build.home" value="${basedir}/build"/>
+    <property name="dist.home" value="${basedir}/dist"/>
+    <property name="docs.home" value="${basedir}/docs"/>
+    <property name="src.home" value="${basedir}/src"/>
+    <property name="javac.encoding" value="UTF-8"/>
+    <property name="compile.debug" value="true"/>
+    <property name="compile.deprecation" value="false"/>
+    <property name="compile.optimize" value="true"/>
+    <path id="compile.classpath">
+    </path>
+    <target name="all" depends="clean,compile" description="Clean build and dist directories, then compile"/>
+    <target name="clean" description="Delete old build and dist directories">
+        <delete dir="${build.home}"/>
+        <delete dir="${dist.home}"/>
+    </target>
+    <target name="prepare">
+        <mkdir dir="${build.home}"/>
+        <mkdir dir="${dist.home}"/>
+    </target>
+    <target name="compile" depends="prepare" description="Compile Java sources">
+        <javac srcdir="${src.home}" destdir="${build.home}" debug="${compile.debug}" deprecation="${compile.deprecation}" optimize="${compile.optimize}" includeantruntime="false" encoding="${javac.encoding}">
+            <classpath refid="compile.classpath"/>
+        </javac>
+        <copy todir="${build.home}">
+            <fileset dir="${src.home}" excludes="**/*.java"/>
+        </copy>
+    </target>
+    <target name="dist" depends="clean,compile" description="Create binary distribution">
+        <jar jarfile="${dist.home}/${app.fullname}.jar" basedir="${build.home}">
+            <manifest>
+                <attribute name="Main-Class" value="vue.StartWindow"/>
+            </manifest>
+        </jar>
+    </target>
+    <target name="javadoc" depends="compile" description="Create Javadoc API documentation">
+        <mkdir dir="${dist.home}/docs/api"/>
+        <javadoc sourcepath="${src.home}" destdir="${dist.home}/docs/api" packagenames="*">
+            <classpath>
+                <path refid="compile.classpath"/>
+            </classpath>
+        </javadoc>
+    </target>
+    <target name="run" depends="dist">
+        <java jar="${dist.home}/${app.fullname}.jar" fork="true"/>
+    </target>
+</project>
